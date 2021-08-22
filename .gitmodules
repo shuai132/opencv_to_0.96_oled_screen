@@ -1,0 +1,12 @@
+[submodule "modules/websocketpp"]
+	path = modules/websocketpp
+	url = git@github.com:zaphoyd/websocketpp.git
+[submodule "modules/asio"]
+	path = modules/asio
+	url = git@github.com:chriskohlhoff/asio.git
+[submodule "modules/RpcCore"]
+	path = modules/RpcCore
+	url = git@github.com:shuai132/RpcCore.git
+[submodule "modules/LOG"]
+	path = modules/LOG
+	url = git@github.com:shuai132/LOG.git

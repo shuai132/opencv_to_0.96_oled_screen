@@ -1,6 +1,7 @@
 #include <memory>
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
+#include "RpcTask.h"
 
 #define IMG_WIDTH 128
 #define IMG_HEIGHT 64
@@ -32,9 +33,11 @@ int main() {
 
     system("mkdir -p out");
     Mat img;
-    auto binFrame = std::make_unique<uint8_t[]>(IMG_WIDTH / 8 * IMG_HEIGHT);
-    auto clearBinFrame = [&]{ memset(binFrame.get(), 0, IMG_WIDTH / 8 * IMG_HEIGHT); };
+    const int binFrameSize = IMG_WIDTH / 8 * IMG_HEIGHT;
+    auto binFrame = std::make_unique<uint8_t[]>(binFrameSize);
+    auto clearBinFrame = [&]{ memset(binFrame.get(), 0, binFrameSize); };
 
+    RpcTask rpcTask;
     while (true) {
         cap.read(img);
         if (img.empty()) break;
@@ -54,12 +57,8 @@ int main() {
             }
         }
         imshow(CV_WINDOW_NAME, img);
-        char fileName[32];
-        static int frameCount;
-        sprintf(fileName, "%s%d%s", "./out/", frameCount++, ".bmp");
-        imwrite(fileName, img);
-        printHex(binFrame.get(), IMG_WIDTH / 8 * IMG_HEIGHT, fileName);
-        waitKey(1000 / cap.get(CAP_PROP_FPS));
+        rpcTask.onFrame(binFrame.get(), binFrameSize);
+        waitKey(1000 / cap.get(CAP_PROP_FPS) * 5);
     }
     printf("finish!\n");
     return 0;
