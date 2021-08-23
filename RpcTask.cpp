@@ -23,7 +23,7 @@ void RpcTask::initRpc() {
         });
     });
     server_->onData = [connection](void* data, size_t len) {
-        connection->onRecvPacket(std::string((char*)data, len));
+        connection->onRecvPackage(std::string((char*)data, len));
     };
 
     // 创建Rpc 收发消息
@@ -42,8 +42,7 @@ void RpcTask::onFrame(void* data, int size) {
         rpc_->createRequest()
         ->cmd("img")
         ->msg(img)
-        ->finally([](FinishType type) {
-        })
+        ->noRsp()
         ->call();
     });
 }

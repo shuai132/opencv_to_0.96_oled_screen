@@ -51,7 +51,6 @@ int main() {
         }
         imshow(CV_WINDOW_NAME, img);
         rpcTask.onFrame(binFrame.get(), binFrameSize);
-        usleep(1000 * 100);
     }
     printf("finish!\n");
     return 0;
