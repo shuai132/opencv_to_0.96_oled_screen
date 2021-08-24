@@ -20,8 +20,27 @@ static void printHex(const uint8_t* data, size_t size, const std::string& name =
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     using namespace cv;
+
+    bool useCap = false;
+    std::unique_ptr<VideoCapture> cap;
+    if (argc >= 2) {
+        std::string cmd(argv[1]);
+        if (cmd == "1" || cmd == "2") {
+            cap = std::make_unique<VideoCapture>();
+            useCap = true;
+        }
+        if (cmd == "1") {
+            cap->open(0);
+            if (!cap->isOpened()) {
+                printf("open failed\n");
+                exit(EXIT_FAILURE);
+            }
+        } else if (cmd == "2") {
+            cap->open("1.gif");
+        }
+    }
 
     Mat img;
     const int binFrameSize = IMG_WIDTH / 8 * IMG_HEIGHT;
@@ -30,9 +49,14 @@ int main() {
 
     RpcTask rpcTask;
     while (true) {
-        const char* imgName = "1.bmp";
-        system("screencapture -m -t bmp -x 1.bmp");
-        img = imread(imgName);
+        if (useCap) {
+            cap->read(img);
+            waitKey(1000 / cap->get(CAP_PROP_FPS));
+        } else {
+            const char* imgName = "1.bmp";
+            system("screencapture -m -t bmp -x 1.bmp");
+            img = imread(imgName);
+        }
         if (img.empty()) break;
 
         cvtColor(img, img, COLOR_RGB2GRAY);
