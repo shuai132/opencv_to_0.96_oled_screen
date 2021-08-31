@@ -37,7 +37,7 @@ void RpcTask::initRpc() {
 
 void RpcTask::onFrame(void* data, int size) {
     using namespace RpcCore;
-    Bianry img((char*)data, size);
+    Binary img((char*)data, size);
     context_->dispatch([this, img = std::move(img)]{
         rpc_->createRequest()
         ->cmd("img")
