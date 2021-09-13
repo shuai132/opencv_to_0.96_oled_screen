@@ -24,3 +24,6 @@ include_directories(modules/websocketpp)
 # RpcCore
 add_subdirectory(modules/RpcCore)
 target_link_libraries(${PROJECT_NAME} RpcCore)
+
+# udp_multicast
+include_directories(modules/udp_multicast)

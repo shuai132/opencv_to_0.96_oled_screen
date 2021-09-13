@@ -33,6 +33,8 @@ void RpcTask::initRpc() {
     });
 
     server_->start();
+
+    udp_multicast_sender_ = std::make_unique<udp_multicast::sender>(*context_, "opencv_oled", "ws://192.168.0.104:3000");
 }
 
 void RpcTask::onFrame(void* data, int size) {
