@@ -1,7 +1,9 @@
 #include "utils.h"
+#include <ifaddrs.h>
 
-std::shared_ptr<asio::steady_timer>
-utils::steady_timer(
+namespace utils {
+
+std::shared_ptr<asio::steady_timer> steady_timer(
         asio::io_context* context,
         const std::function<void()>& cb,
         uint32_t ms,
@@ -22,4 +24,26 @@ utils::steady_timer(
         }
     });
     return timer;
+}
+
+std::vector<IpAddress> get_ip_address() {
+  std::vector<IpAddress> ips;
+  ifaddrs* pIfaddrs;
+  getifaddrs(&pIfaddrs);
+  auto tmp = pIfaddrs;
+  while (tmp) {
+    if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
+      std::string ip = inet_ntoa(((struct sockaddr_in *)tmp->ifa_addr)->sin_addr);
+      if (ip == "127.0.0.1") {
+        tmp = tmp->ifa_next;
+        continue;
+      }
+      ips.push_back({std::move(ip), tmp->ifa_name});
+    }
+    tmp = tmp->ifa_next;
+  }
+  freeifaddrs(pIfaddrs);
+  return ips;
+}
+
 }

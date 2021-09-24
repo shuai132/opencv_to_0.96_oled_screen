@@ -38,4 +38,12 @@ std::shared_ptr<asio::steady_timer> steady_timer(
 
 #define FOR(i, n)   for(std::remove_reference<std::remove_const<typeof(n)>::type>::type i = 0; i < n; i++)
 
+
+struct IpAddress {
+  std::string ip;
+  std::string name;
+};
+
+std::vector<IpAddress> get_ip_address();
+
 }
