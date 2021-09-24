@@ -1,6 +1,3 @@
-[submodule "modules/websocketpp"]
-	path = modules/websocketpp
-	url = git@github.com:zaphoyd/websocketpp.git
 [submodule "modules/asio"]
 	path = modules/asio
 	url = git@github.com:chriskohlhoff/asio.git
@@ -13,3 +10,6 @@
 [submodule "modules/udp_multicast"]
 	path = modules/udp_multicast
 	url = git@github.com:shuai132/udp_multicast.git
+[submodule "modules/PacketProcessor"]
+	path = modules/PacketProcessor
+	url = git@github.com:shuai132/PacketProcessor.git

@@ -2,7 +2,7 @@
 
 #include "noncopyable.hpp"
 #include "asio.hpp"
-#include "WebsocketServer.h"
+#include "NetChannel.h"
 #include "RpcCore.hpp"
 #include "AsioContext.h"
 #include "udp_multicast.hpp"
@@ -17,7 +17,7 @@ public:
     void onFrame(void* data, int size);
 
 private:
-    std::unique_ptr<WebsocketServer> server_;
+    std::unique_ptr<NetChannel> server_;
     std::unique_ptr<std::thread> thread_;
 
     std::shared_ptr<RpcCore::Rpc> rpc_;
