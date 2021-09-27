@@ -22,4 +22,6 @@ private:
 
     std::shared_ptr<RpcCore::Rpc> rpc_;
     std::unique_ptr<udp_multicast::sender> udp_multicast_sender_;
+    std::unique_ptr<asio::ip::udp::socket> udp_socket_;
+    std::string udp_remote_ip_;
 };
