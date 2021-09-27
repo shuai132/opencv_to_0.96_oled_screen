@@ -1,18 +1,18 @@
 #pragma once
 
 #include "noncopyable.hpp"
-#include "TcpServer.h"
-#include "PacketProcessor.h"
+#include "tcp_server.hpp"
+
+using namespace asio_tcp;
 
 class NetChannel : noncopyable {
 public:
     explicit NetChannel(asio::io_context* context);
-    void sendData(void* data, size_t len);
-    std::function<void(void* data, size_t len)> onData;
+    void sendData(std::string data);
+    std::function<void(std::string data)> onData;
 
 private:
     asio::io_context* context_;
-    TcpServer server_;
-    std::weak_ptr<TcpSession> session_;
-    PacketProcessor packetProcessor_;
+    tcp_server server_;
+    std::weak_ptr<tcp_session> session_;
 };

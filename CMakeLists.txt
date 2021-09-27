@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(OpenCV REQUIRED)
 
-add_executable(${PROJECT_NAME} main.cpp NetChannel.cpp RpcTask.cpp utils.cpp AsioContext.cpp TcpServer.cpp)
+add_executable(${PROJECT_NAME} main.cpp NetChannel.cpp RpcTask.cpp utils.cpp AsioContext.cpp)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 
 include_directories(base)
@@ -24,6 +24,5 @@ target_link_libraries(${PROJECT_NAME} RpcCore)
 # udp_multicast
 include_directories(modules/udp_multicast)
 
-# PacketProcessor
-add_subdirectory(modules/PacketProcessor)
-target_link_libraries(${PROJECT_NAME} PacketProcessor)
+# asio_tcp
+include_directories(modules/asio_tcp)

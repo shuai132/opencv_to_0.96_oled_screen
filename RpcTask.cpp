@@ -18,11 +18,11 @@ void RpcTask::initRpc() {
     using namespace RpcCore;
 
     auto connection = std::make_shared<Connection>();
-    connection->sendPackageImpl = [&](const std::string& package) {
-        server_->sendData((void*)package.data(), package.length());
+    connection->sendPackageImpl = [&](std::string package) {
+        server_->sendData(std::move(package));
     };
-    server_->onData = [connection](void* data, size_t len) {
-        connection->onRecvPackage(std::string((char*)data, len));
+    server_->onData = [connection](std::string data) {
+        connection->onRecvPackage(std::move(data));
     };
 
     rpc_ = Rpc::create(connection);
