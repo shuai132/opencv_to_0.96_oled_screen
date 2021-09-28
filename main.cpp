@@ -7,6 +7,7 @@
 #define IMG_HEIGHT 64
 
 #define CV_WINDOW_NAME "OLED"
+#define SCREENSHOT_NAME "screenshot.bmp"
 
 static void printHex(const uint8_t* data, size_t size, const std::string& name = "img") {
     printf("%s: {", name.c_str());
@@ -20,26 +21,40 @@ static void printHex(const uint8_t* data, size_t size, const std::string& name =
     }
 }
 
+static bool enableImgShow = true;
+static bool useScreenShot = false;
+static bool useCap = false;
+static bool useFile = false;
+
 int main(int argc, char* argv[]) {
     using namespace cv;
 
-    bool useCap = false;
-    std::unique_ptr<VideoCapture> cap;
+    auto cap = std::make_unique<VideoCapture>();
+    if (argc == 1) {
+        printf("0  ScreenShot\n1  Camera\nfile name of video, gif...\n");
+        return 0;
+    }
     if (argc >= 2) {
         std::string cmd(argv[1]);
-        if (cmd == "1" || cmd == "2") {
-            cap = std::make_unique<VideoCapture>();
-            useCap = true;
+        if (cmd == "0") {
+            useScreenShot = true;
         }
-        if (cmd == "1") {
+        else if (cmd == "1") {
+            useCap = true;
             cap->open(0);
             if (!cap->isOpened()) {
                 printf("open failed\n");
-                exit(EXIT_FAILURE);
+                return 0;
             }
-        } else if (cmd == "2") {
-            cap->open("1.gif");
         }
+        else {
+            useFile = true;
+            cap->open(cmd);
+        }
+    }
+    if (argc >= 3) {
+        std::string v(argv[2]);
+        enableImgShow = v == "1" || v == "true";
     }
 
     Mat img;
@@ -49,13 +64,13 @@ int main(int argc, char* argv[]) {
 
     RpcTask rpcTask;
     while (true) {
-        if (useCap) {
+        if (useScreenShot) {
+            system("screencapture -m -t bmp -x " SCREENSHOT_NAME);
+            img = imread(SCREENSHOT_NAME);
+        }
+        else if (useCap || useFile) {
             cap->read(img);
             waitKey(1000 / cap->get(CAP_PROP_FPS));
-        } else {
-            const char* imgName = "1.bmp";
-            system("screencapture -m -t bmp -x 1.bmp");
-            img = imread(imgName);
         }
         if (img.empty()) break;
 
@@ -73,7 +88,9 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-        imshow(CV_WINDOW_NAME, img);
+        if (enableImgShow) {
+            imshow(CV_WINDOW_NAME, img);
+        }
         rpcTask.onFrame(binFrame.get(), binFrameSize);
     }
     printf("finish!\n");
