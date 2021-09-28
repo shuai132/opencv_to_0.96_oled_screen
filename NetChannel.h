@@ -7,9 +7,11 @@ using namespace asio_tcp;
 
 class NetChannel : noncopyable {
 public:
-    explicit NetChannel(asio::io_context* context);
+    explicit NetChannel(asio::io_context* context, uint16_t port);
     void sendData(std::string data);
-    std::function<void(std::string data)> onData;
+    std::function<void(std::weak_ptr<tcp_session>)> onNewSession;
+    std::function<void(std::weak_ptr<tcp_session>, std::string data)> onData;
+    std::function<void(std::weak_ptr<tcp_session>)> onClose;
 
 private:
     asio::io_context* context_;

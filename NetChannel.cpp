@@ -2,20 +2,24 @@
 #include "log.h"
 #include "utils.h"
 
-NetChannel::NetChannel(asio::io_context* context)
-        : context_(context), server_(*context, 3000) {
-    server_.onNewSession = [this](const std::weak_ptr<tcp_session>& ws) {
-        if (!session_.expired()) return;
+NetChannel::NetChannel(asio::io_context* context, uint16_t port)
+        : context_(context), server_(*context, port) {
+    server_.onNewSession = [this](std::weak_ptr<tcp_session> ws) {
+        if (!session_.expired()) {
+            session_.lock()->close();
+        };
         session_ = ws;
         auto s = session_.lock();
         LOGD("connected: %p",s.get());
         s->onClose = [this, ws]{
             LOGD("disconnected: %p", ws.lock().get());
             session_.reset();
+            if (onClose) onClose(ws);
         };
-        s->onData = [this](std::string data) {
-          if (onData) onData(std::move(data));
+        s->onData = [this, ws](std::string data) {
+            if (onData) onData(ws, std::move(data));
         };
+        if (onNewSession) onNewSession(std::move(ws));
     };
 }
 

@@ -1,10 +1,10 @@
 #include "RpcTask.h"
 #include "RpcCore.hpp"
-
-using asio::ip::udp;
+#include "log.h"
 
 RpcTask::RpcTask() {
-    server_ = std::make_unique<NetChannel>(context_);
+    server_ = std::make_unique<NetChannel>(context_, tcp_socket_port_);
+    udp_client_ = std::make_unique<asio_udp::udp_client>(*context_);
     thread_ = std::make_unique<std::thread>([this]{
         initRpc();
         context_->run();
@@ -23,35 +23,30 @@ void RpcTask::initRpc() {
     connection->sendPackageImpl = [&](std::string package) {
         server_->sendData(std::move(package));
     };
-    server_->onData = [connection](std::string data) {
+    server_->onData = [connection](const std::weak_ptr<tcp_session>& ws, std::string data) {
         connection->onRecvPackage(std::move(data));
+    };
+
+    server_->onNewSession = [this](const std::weak_ptr<tcp_session>& ws) {
+        auto remoteIp = ws.lock()->remote_endpoint().address().to_v4().to_string();
+        LOGI("onNewSession: %s\n", remoteIp.c_str());
+        auto endpoints = asio::ip::udp::endpoint(asio::ip::address_v4::from_string(remoteIp), udp_socket_port_);
+        udp_remote_endpoint_ = std::make_unique<asio::ip::udp::endpoint>(endpoints);
+    };
+    server_->onClose = [this](const std::weak_ptr<tcp_session>& ws) {
+        udp_remote_endpoint_.reset();
     };
 
     rpc_ = Rpc::create(connection);
     rpc_->setTimer([this](uint32_t ms, const Rpc::TimeoutCb &cb) {
         postDelayed(cb, ms);
     });
-    rpc_->subscribe<String>("ready", [this](const String& ip){
-        printf("wtf:ready: %s\n", ip.c_str());
-        udp_socket_ = std::make_unique<udp::socket>(*context_, udp::endpoint(udp::v4(), 3001));
-        udp_remote_ip_ = ip;
-    });
 
-    std::string uri = utils::get_ip_address()[0].ip + ":3000";
+    std::string uri = utils::get_ip_address()[0].ip + ":" + std::to_string(tcp_socket_port_);
     udp_multicast_sender_ = std::make_unique<udp_multicast::sender>(*context_, "opencv_oled", std::move(uri));
 }
 
 void RpcTask::onFrame(void* data, int size) {
-    if (!udp_socket_) return;
-    auto keeper = std::make_unique<std::string>((char*)data, size);
-
-    udp::resolver resolver(*context_);
-    udp::resolver::results_type endpoints =
-        resolver.resolve(udp::v4(), udp_remote_ip_, "3001");
-//    udp_socket_->send_to(asio::buffer(request, request_length), *endpoints.begin());
-    udp_socket_->async_send_to(
-        asio::buffer(keeper->data(), keeper->length()), *endpoints.begin(),
-        [keeper = std::move(keeper)](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
-        {
-        });
+    if (!udp_remote_endpoint_) return;
+    udp_client_->do_send(data, size, *udp_remote_endpoint_);
 }
