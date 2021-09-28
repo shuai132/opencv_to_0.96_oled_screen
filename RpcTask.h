@@ -17,6 +17,8 @@ public:
 
     void onFrame(void* data, int size);
 
+    void waitConnect();
+
 private:
     std::unique_ptr<NetChannel> server_;
     std::unique_ptr<std::thread> thread_;

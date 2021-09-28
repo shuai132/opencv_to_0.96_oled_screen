@@ -29,7 +29,7 @@ void RpcTask::initRpc() {
 
     server_->onNewSession = [this](const std::weak_ptr<tcp_session>& ws) {
         auto remoteIp = ws.lock()->remote_endpoint().address().to_v4().to_string();
-        LOGI("onNewSession: %s\n", remoteIp.c_str());
+        LOGI("onNewSession: %s", remoteIp.c_str());
         auto endpoints = asio::ip::udp::endpoint(asio::ip::address_v4::from_string(remoteIp), udp_socket_port_);
         udp_remote_endpoint_ = std::make_unique<asio::ip::udp::endpoint>(endpoints);
     };
@@ -49,4 +49,11 @@ void RpcTask::initRpc() {
 void RpcTask::onFrame(void* data, int size) {
     if (!udp_remote_endpoint_) return;
     udp_client_->do_send(data, size, *udp_remote_endpoint_);
+}
+
+void RpcTask::waitConnect(){
+    for(;;) {
+        if (udp_remote_endpoint_) break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 }

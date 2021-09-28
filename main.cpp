@@ -63,6 +63,7 @@ int main(int argc, char* argv[]) {
     auto clearBinFrame = [&]{ memset(binFrame.get(), 0, binFrameSize); };
 
     RpcTask rpcTask;
+    rpcTask.waitConnect();
     while (true) {
         if (useScreenShot) {
             system("screencapture -m -t bmp -x " SCREENSHOT_NAME);
@@ -93,6 +94,7 @@ int main(int argc, char* argv[]) {
         }
         rpcTask.onFrame(binFrame.get(), binFrameSize);
     }
-    printf("finish!\n");
+    printf("press Ctrl+C to exit\n");
+    waitKey();
     return 0;
 }
