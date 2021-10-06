@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 
     auto cap = std::make_unique<VideoCapture>();
     if (argc == 1) {
-        printf("0  ScreenShot\n1  Camera\nfile name of video, gif...\n");
+        printf("0  ScreenShot\n1  Camera\n2 + file name of video, gif...\n3 + location\n");
         return 0;
     }
     if (argc >= 2) {
@@ -47,9 +47,33 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
         }
-        else {
+        else if (cmd == "2"){
+            std::string file(argv[2]);
             useFile = true;
-            cap->open(cmd);
+            cap->open(file);
+        }
+        else if (cmd == "3") {
+            std::string location(argv[2]);
+            RpcTask rpcTask;
+            rpcTask.waitConnect();
+            rpcTask.rpc()->createRequest()
+            ->cmd("config_location")
+            ->msg(RpcCore::String(location))
+            ->rsp<RpcCore::Raw<bool>>([](auto rsp){
+                printf("done: %d\n", rsp.value);
+                exit(EXIT_SUCCESS);
+            })
+            ->call();
+            for(;;) {
+                sleep(1);
+            }
+        }
+
+        if (cmd == "0" || cmd == "1" || cmd == "2") {
+            if (argc >= 3) {
+                std::string v(argv[2]);
+                enableImgShow = v == "1" || v == "true";
+            }
         }
     }
     if (argc >= 3) {

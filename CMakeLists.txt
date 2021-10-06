@@ -3,6 +3,7 @@ project(oled_screen)
 
 set(CMAKE_CXX_STANDARD 14)
 
+#set(OpenCV_DIR  /run/media/geoffrey/Timbersaw/Backup/other_package/opencv-4.0.0/build)
 find_package(OpenCV REQUIRED)
 
 add_executable(${PROJECT_NAME} main.cpp NetChannel.cpp RpcTask.cpp utils.cpp AsioContext.cpp)

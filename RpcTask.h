@@ -19,6 +19,8 @@ public:
 
     void waitConnect();
 
+    std::shared_ptr<RpcCore::Rpc> rpc();
+
 private:
     std::unique_ptr<NetChannel> server_;
     std::unique_ptr<std::thread> thread_;
